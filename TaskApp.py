@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkcalendar import DateEntry
-from datetime import datetime, timedelta
+from datetime import datetime
 from Task import Task
 from TaskManager import TaskManager
 
@@ -28,30 +28,20 @@ class TaskApp:
         self.due_date_entry = DateEntry(root, date_pattern='dd-MM-yyyy')
         self.due_date_entry.grid(row=2, column=1)
 
-        self.description_label = tk.Label(root, text="Description")
-        self.description_label.grid(row=3, column=0)
-        self.description_entry = tk.Entry(root)
-        self.description_entry.grid(row=3, column=1)
-
-        self.category_label = tk.Label(root, text="Category")
-        self.category_label.grid(row=4, column=0)
-        self.category_entry = tk.Entry(root)
-        self.category_entry.grid(row=4, column=1)
-
         self.add_button = tk.Button(root, text="Add Task", command=self.add_task)
-        self.add_button.grid(row=5, column=0, columnspan=2)
+        self.add_button.grid(row=3, column=0, columnspan=2)
 
         self.task_listbox = tk.Listbox(root, width=50)
-        self.task_listbox.grid(row=6, column=0, columnspan=2)
+        self.task_listbox.grid(row=4, column=0, columnspan=2)
 
         self.status_label = tk.Label(root, text="Update Status")
-        self.status_label.grid(row=7, column=0)
+        self.status_label.grid(row=5, column=0)
         self.status_var = tk.StringVar()
         self.status_menu = tk.OptionMenu(root, self.status_var, "Not Started", "Ongoing", "Done")
-        self.status_menu.grid(row=7, column=1)
+        self.status_menu.grid(row=5, column=1)
 
         self.update_button = tk.Button(root, text="Update Status", command=self.update_status)
-        self.update_button.grid(row=8, column=0, columnspan=2)
+        self.update_button.grid(row=6, column=0, columnspan=2)
 
         self.refresh_task_list()
 
@@ -59,10 +49,8 @@ class TaskApp:
         title = self.title_entry.get()
         urgency = int(self.urgency_var.get())
         due_date = datetime.strptime(self.due_date_entry.get(), "%d-%m-%Y")
-        description = self.description_entry.get()
-        category = self.category_entry.get()
 
-        new_task = Task(title, urgency, due_date, description, category)
+        new_task = Task(title, urgency, due_date)
         self.task_manager.add_task(new_task)
 
         self.refresh_task_list()
@@ -82,23 +70,16 @@ class TaskApp:
     def refresh_task_list(self):
         self.task_listbox.delete(0, tk.END)
         for task in self.task_manager.get_tasks():
-            if task.status != "Done":
-                self.task_listbox.insert(tk.END, f"{task.title} - {task.urgency} - {task.due_date.date()} - {task.status}")
-                self.color_task(self.task_listbox.size() - 1, task)
+            self.task_listbox.insert(tk.END, f"{task.title} - {task.urgency} - {task.due_date.date()} - {task.status}")
+            self.color_task(self.task_listbox.size() - 1, task.urgency)
 
-    def color_task(self, index, task):
-        today = datetime.now().date()
-        tomorrow = today + timedelta(days=1)
-        if task.due_date.date() == today or task.due_date.date() == tomorrow:
-            colors = {
-                1: "green",
-                2: "yellow",
-                3: "orange",
-                4: "red",
-                5: "purple"
-            }
-            self.task_listbox.itemconfig(index, {'bg': colors.get(task.urgency, 'white')})
-        else:
-            self.task_listbox.itemconfig(index, {'bg': 'white'})
-
+    def color_task(self, index, urgency):
+        colors = {
+            "1": "green",
+            "2": "yellow",
+            "3": "orange",
+            "4": "red",
+            "5": "purple"
+        }
+        self.task_listbox.itemconfig(index, {'bg': colors.get(str(urgency), 'white')})
 
